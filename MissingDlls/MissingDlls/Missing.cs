@@ -88,7 +88,7 @@ namespace MissingDlls
                 Assembly referencedAssembly;
                 if (assembliesInFolder.TryGetValue(assemblyName.Name, out referencedAssembly))
                     CheckVersion(tabLevel, assemblyName, referencedAssembly);
-                else if (!TryLoadAssemblyFromGac(assemblyName, ref referencedAssembly)) 
+                else if (!TryLoadAssemblyFromGac(assemblyName, ref referencedAssembly, tabLevel)) 
                         continue;
                 
                 AnalyseTree(referencedAssembly, tabLevel + 1);
@@ -108,7 +108,7 @@ namespace MissingDlls
             }
         }
 
-        private bool TryLoadAssemblyFromGac(AssemblyName referencedAssembly, ref Assembly assembly2)
+        private bool TryLoadAssemblyFromGac(AssemblyName referencedAssembly, ref Assembly assembly2, int tabLevel)
         {
             try
             {
@@ -116,8 +116,9 @@ namespace MissingDlls
             }
             catch (Exception ex)
             {
+                NewLine(tabLevel + 1);
                 CurrentLine.IsError = true;
-                CurrentLine.AddText(string.Format("Failed to load assembly '{0}': {1}", referencedAssembly.Name, ex.Message),
+                CurrentLine.AddText(string.Format("Failed to load assembly from gac '{0}': {1}", referencedAssembly.Name, ex.Message),
                     ConsoleColor.Red);
                 IsSuccess = false;
                 return false;
@@ -135,7 +136,7 @@ namespace MissingDlls
             catch (Exception ex)
             {
                 CurrentLine.IsError = true;
-                CurrentLine.AddText(string.Format("Failed to load assembly '{0}': {1}", path, ex.Message), ConsoleColor.Red);
+                CurrentLine.AddText(string.Format("Failed to load assembly from file '{0}': {1}", path, ex.Message), ConsoleColor.Red);
                 assembly = null;
             }
             return assembly;
