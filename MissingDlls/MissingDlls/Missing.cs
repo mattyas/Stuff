@@ -11,13 +11,15 @@ namespace MissingDlls
         private readonly string path;
         private readonly bool onlyErrors;
         private readonly bool hideGac;
+        private readonly string[] ignores;
         private readonly Dictionary<string, Assembly> assembliesInFolder;
         private readonly List<TextLine> lines = new List<TextLine>(); 
-        public Missing(string path, bool onlyErrors, bool hideGac)
+        public Missing(string path, bool onlyErrors, bool hideGac, string[] ignores)
         {
             this.path = path;
             this.onlyErrors = onlyErrors;
             this.hideGac = hideGac;
+            this.ignores = ignores;
             IsSuccess = true;
 
             assembliesInFolder = GetFiles("*.dll")
@@ -118,9 +120,12 @@ namespace MissingDlls
             {
                 NewLine(tabLevel + 1);
                 CurrentLine.IsError = true;
+                bool ignore = ignores.Contains(referencedAssembly.Name);
+                if (ignore)
+                    CurrentLine.AddText("Ignoring ", ConsoleColor.DarkCyan);
                 CurrentLine.AddText(string.Format("Failed to load assembly from gac '{0}': {1}", referencedAssembly.Name, ex.Message),
-                    ConsoleColor.Red);
-                IsSuccess = false;
+                    ignore ? ConsoleColor.DarkCyan : ConsoleColor.Red);
+                IsSuccess = ignore | false;
                 return false;
             }
             return true;
